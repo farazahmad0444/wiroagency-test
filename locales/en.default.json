@@ -106,7 +106,26 @@
   },
   "products": {
     "product": {
+      "low_stock": "Only {{ count }} left!",
       "add_to_cart": "Add to cart",
+      "gift_wrapping": {
+        "saving": "Saving…",
+        "label": "Wrap as a gift? ({{ price }})",
+        "to_placeholder": "Recipient’s name",
+        "from_placeholder": "Sender’s name",
+        "message_placeholder": "Type your message here",
+        "edit": "Edit",
+        "edit_label": "Edit gift wrapping for {{ title }}",
+        "save": "Save",
+        "cancel": "Cancel",
+        "free": "Free",
+        "fields_legend": "Gift wrapping details",
+        "to": "To",
+        "from": "From",
+        "message": "Gift message",
+        "property_for": "Gift wrap for",
+        "max_characters": "Maximum {{ count }} characters"
+      },
       "choose_options": "Choose options",
       "choose_product_options": "Choose options for {{ product_name }}",
       "description": "Description",
@@ -213,10 +232,18 @@
       "sort_button": "Sort",
       "sort_by_label": "Sort by:",
       "to": "To",
-      "clear_filter": "Remove filter"
+      "clear_filter": "Remove filter",
+      "quick_filters": {
+        "label": "Quick filters",
+        "all": "All products"
+      }
     }
   },
   "templates": {
+    "404": {
+      "title": "Page not found",
+      "subtext": "404"
+    },
     "search": {
       "no_results": "No results found for “{{ terms }}”. Check the spelling or use a different word or phrase.",
       "page": "Page",
@@ -260,10 +287,6 @@
         "post_success": "Thanks for contacting us. We'll get back to you as soon as possible.",
         "error_heading": "Please adjust the following:"
       }
-    },
-    "404": {
-      "title": "Page not found",
-      "subtext": "404"
     }
   },
   "sections": {

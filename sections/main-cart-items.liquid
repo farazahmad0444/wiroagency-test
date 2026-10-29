@@ -21,6 +21,7 @@
 
 {%- unless settings.cart_type == 'drawer' -%}
   <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'cart-gift-wrapping.js' | asset_url }}" defer="defer"></script>
 {%- endunless -%}
 
 <script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
@@ -82,6 +83,8 @@
 
               <tbody>
                 {%- for item in cart.items -%}
+                  {%- comment -%} Gift wrap lines are shown as a panel on the product they wrap. {%- endcomment -%}
+                  {%- if item.properties['_gift_wrap_for'] != blank -%}{%- continue -%}{%- endif -%}
                   <tr
                     class="cart-item {% if item.parent_relationship.parent != null %}cart-item__nested-line{% endif %}"
                     id="CartItem-{{ item.index | plus: 1 }}"
@@ -185,6 +188,8 @@
                           </li>
                         {%- endfor -%}
                       </ul>
+
+                      {%- render 'cart-gift-wrapping', item: item, id_prefix: 'Cart' -%}
                     </td>
 
                     <td class="cart-item__totals right medium-hide large-up-hide">

@@ -1,0 +1,58 @@
+{% doc %}
+  Renders a labelled gift wrapping field. Used on the product page and in the cart, so the
+  field keeps a single set of styles. The property name doubles as the visible label.
+
+  @param {string} id - Unique ID for the field.
+  @param {string} property - The line item property the field fills, e.g. `To`.
+  @param {number} max_length - Maximum number of characters allowed.
+  @param {string} placeholder - Placeholder text.
+  @param {string} [value] - The current value, when editing an existing gift wrap.
+  @param {string} [form_id] - ID of the form the field submits with. Omit when the value is read by JavaScript instead.
+  @param {boolean} [multiline] - Renders a textarea instead of an input. Defaults to `false`.
+
+  @example
+  {% render 'gift-wrapping-field', id: 'GiftWrapTo', property: 'To', max_length: 30, placeholder: 'Recipient’s name', form_id: product_form_id %}
+{% enddoc %}
+{%- liquid
+  assign field_classes = 'tw-box-border tw-block tw-w-full tw-font-body tw-rounded tw-border tw-border-solid tw-border-[#B3B3B3] tw-bg-background tw-px-4 tw-text-base tw-text-foreground tw-transition-colors placeholder:tw-text-foreground/40 hover:tw-border-foreground/60 focus:tw-border-foreground focus:tw-outline-none focus:tw-shadow-none focus-visible:tw-outline-none focus-visible:tw-shadow-none'
+  assign description_id = id | append: '-description'
+-%}
+<div class="tw-flex tw-flex-col tw-gap-2">
+  <label for="{{ id }}" class="tw-text-base tw-text-foreground">{{ property }}</label>
+
+  {%- if multiline -%}
+    <textarea
+      id="{{ id }}"
+      name="gift_wrap[{{ property | escape }}]"
+      class="{{ field_classes }} tw-h-[80px] tw-resize-y tw-py-3"
+      rows="5"
+      maxlength="{{ max_length }}"
+      placeholder="{{ placeholder | escape }}"
+      aria-describedby="{{ description_id }}"
+      data-gift-wrap-property="{{ property | escape }}"
+      {% if form_id %}
+        form="{{ form_id }}"
+      {% endif %}
+    >{{ value | escape }}</textarea>
+  {%- else -%}
+    <input
+      id="{{ id }}"
+      type="text"
+      name="gift_wrap[{{ property | escape }}]"
+      value="{{ value | escape }}"
+      class="{{ field_classes }} tw-h-[42px]"
+      maxlength="{{ max_length }}"
+      placeholder="{{ placeholder | escape }}"
+      autocomplete="off"
+      aria-describedby="{{ description_id }}"
+      data-gift-wrap-property="{{ property | escape }}"
+      {% if form_id %}
+        form="{{ form_id }}"
+      {% endif %}
+    >
+  {%- endif -%}
+
+  <span id="{{ description_id }}" class="visually-hidden">
+    {{- 'products.product.gift_wrapping.max_characters' | t: count: max_length -}}
+  </span>
+</div>

@@ -1,0 +1,27 @@
+{% doc %}
+  Renders an "Only X left!" message when a variant's tracked stock is below a threshold.
+  The wrapper always renders, so it can be refreshed in place when the variant changes.
+
+  @param {string} id - Unique ID for the wrapper, used to refresh it on variant change.
+  @param {variant} variant - The variant whose stock is checked.
+  @param {number} threshold - Shows the message when stock is below this number.
+
+  @example
+  {% render 'low-stock-badge', id: 'LowStock-main', variant: product.selected_or_first_available_variant, threshold: 10 %}
+{% enddoc %}
+{%- liquid
+  assign is_low_stock = false
+  if variant.inventory_management == 'shopify' and variant.inventory_quantity > 0 and variant.inventory_quantity < threshold
+    assign is_low_stock = true
+  endif
+-%}
+<div id="{{ id }}" class="tw-shrink-0">
+  {%- if is_low_stock -%}
+    <p class="tw-m-0 tw-flex tw-items-center tw-gap-2 tw-text-base tw-text-amber-700">
+      <span class="tw-flex tw-h-4 tw-w-4 tw-items-center tw-justify-center tw-rounded-full tw-bg-amber-500/20" aria-hidden="true">
+        <span class="tw-h-2 tw-w-2 tw-rounded-full tw-bg-amber-500"></span>
+      </span>
+      {{ 'products.product.low_stock' | t: count: variant.inventory_quantity }}
+    </p>
+  {%- endif -%}
+</div>

@@ -1,0 +1,159 @@
+{% doc %}
+  Renders quick filters: a row of shortcuts to collection filter values, of which only one
+  can be applied at a time. Each is a link to the collection with that value applied, any
+  other quick filter removed and the customer's other filters and sorting kept, so it works
+  without JavaScript. `quick-filters.js` applies it in place through Dawn's facets instead.
+
+  The entries come from the collection's `custom.quick_filters` metafield (list of single line
+  text), or `default_values` when it isn't set. Each is matched, ignoring case, to a filter
+  value's label, so it can come from any list filter (product type, an option, a metafield).
+  Entries without a matching value, or that would show no products, are skipped.
+
+  Render this inside the product grid section: Dawn's facets re-render it with every filter
+  change, so the active state always matches the applied filters.
+
+  @param {collection} collection - The collection being filtered.
+  @param {string} [default_values] - Comma separated entries for collections without the metafield.
+
+  @example
+  {% render 'quick-filters', collection: collection, default_values: section.settings.quick_filters_default %}
+{% enddoc %}
+{%- liquid
+  assign entries = collection.metafields.custom.quick_filters.value
+  if entries == blank
+    assign entries = default_values | split: ','
+  endif
+
+  # Entry labels, normalised for matching, e.g. `|accessories|snowboard|`.
+  assign quick_labels = '|'
+  for entry in entries
+    assign quick_label = entry | strip | downcase
+    if quick_label != blank
+      assign quick_labels = quick_labels | append: quick_label | append: '|'
+    endif
+  endfor
+
+  # The applied filters to keep when switching quick filter, and which quick filters are applied.
+  assign kept_params = ''
+  assign active_quick_params = ''
+  for filter in collection.filters
+    if filter.type == 'price_range'
+      if filter.min_value.value != null
+        assign price = filter.min_value.value | divided_by: 100.0
+        assign kept_params = kept_params | append: '&' | append: filter.min_value.param_name | append: '=' | append: price
+      endif
+      if filter.max_value.value != null
+        assign price = filter.max_value.value | divided_by: 100.0
+        assign kept_params = kept_params | append: '&' | append: filter.max_value.param_name | append: '=' | append: price
+      endif
+      continue
+    endif
+
+    for value in filter.active_values
+      assign value_token = value.label | strip | downcase | prepend: '|' | append: '|'
+      if quick_labels contains value_token
+        assign active_quick_params = active_quick_params | append: '|' | append: filter.param_name | append: '|'
+      else
+        assign value_param = value.value | url_encode
+        assign kept_params = kept_params | append: '&' | append: value.param_name | append: '=' | append: value_param
+      endif
+    endfor
+  endfor
+
+  if collection.sort_by != blank
+    assign kept_params = kept_params | append: '&sort_by=' | append: collection.sort_by
+  endif
+-%}
+
+{%- capture quick_filter_items -%}
+  {%- for entry in entries -%}
+    {%- liquid
+      assign quick_label = entry | strip | downcase
+      assign matched_filter = nil
+      assign matched_value = nil
+
+      for filter in collection.filters
+        if matched_value or filter.type == 'price_range'
+          continue
+        endif
+
+        for value in filter.values
+          assign value_label = value.label | strip | downcase
+          if value_label == quick_label
+            assign matched_filter = filter
+            assign matched_value = value
+            break
+          endif
+        endfor
+      endfor
+
+      if matched_value == nil
+        continue
+      endif
+
+      # Counts reflect the filters already applied, so they only say whether this value would
+      # show products when no other filter's quick filter is applied (it's about to be replaced).
+      if matched_value.count == 0 and matched_value.active == false
+        assign param_token = matched_filter.param_name | prepend: '|' | append: '|'
+        assign other_quick_params = active_quick_params | remove: param_token
+        if other_quick_params == blank
+          continue
+        endif
+      endif
+
+      assign value_param = matched_value.value | url_encode
+      assign quick_filter_url = collection.url | append: '?' | append: matched_value.param_name | append: '=' | append: value_param | append: kept_params
+    -%}
+    <li class="tw-shrink-0">
+      <a
+        href="{{ quick_filter_url }}"
+        class="quick-filter"
+        {% if matched_value.active %}
+          aria-current="true"
+        {% endif %}
+      >
+        {{- matched_value.label | escape -}}
+      </a>
+    </li>
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if quick_filter_items != blank -%}
+  {%- liquid
+    assign all_url = collection.url
+    if kept_params != blank
+      assign all_url = kept_params | remove_first: '&' | prepend: '?' | prepend: collection.url
+    endif
+  -%}
+  <div class="tw-border-0 tw-border-b tw-border-solid tw-border-foreground/10 md:tw-border-b-0">
+    <nav class="page-width" aria-label="{{ 'products.facets.quick_filters.label' | t }}">
+      <quick-filters class="tw-relative tw-block">
+        {%- comment -%} Dawn's facets replace this element's contents with every filter change. {%- endcomment -%}
+        <div class="quick-filters__scroller" data-quick-filters-list>
+          <ul class="tw-m-0 tw-flex tw-list-none tw-gap-6 tw-p-0 aria-busy:tw-pointer-events-none md:tw-flex-wrap md:tw-gap-x-8 md:tw-gap-y-2">
+            <li class="tw-shrink-0">
+              <a
+                href="{{ all_url }}"
+                class="quick-filter"
+                {% if active_quick_params == blank %}
+                  aria-current="true"
+                {% endif %}
+              >
+                {{- 'products.facets.quick_filters.all' | t -}}
+              </a>
+            </li>
+            {{ quick_filter_items }}
+          </ul>
+        </div>
+
+        {%- comment -%}
+          A pointer shortcut for scrolling the row on small screens. Hidden from assistive tech and the
+          tab order, as every filter is already reachable by keyboard and scrolls into view on focus.
+        {%- endcomment -%}
+        <button type="button" class="quick-filters__next" tabindex="-1" aria-hidden="true" hidden data-quick-filters-next>
+          <span class="svg-wrapper tw-h-3 tw-w-3">{{- 'icon-triangle-right.svg' | inline_asset_content -}}</span>
+        </button>
+      </quick-filters>
+    </nav>
+  </div>
+{%- endif -%}

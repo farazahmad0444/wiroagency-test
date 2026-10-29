@@ -1,0 +1,16 @@
+{% doc %}
+  Renders the gift wrap option label with its price, e.g. "Wrap as a gift? (+£15)".
+
+  @param {variant} variant - The gift wrap product variant, whose price is shown.
+
+  @example
+  {% render 'gift-wrapping-label', variant: gift_wrap_variant %}
+{% enddoc %}
+{%- liquid
+  if variant.price == 0
+    assign gift_wrap_price = 'products.product.gift_wrapping.free' | t
+  else
+    assign gift_wrap_price = variant.price | money_without_trailing_zeros | prepend: '+'
+  endif
+-%}
+<span>{{ 'products.product.gift_wrapping.label' | t: price: gift_wrap_price }}</span>

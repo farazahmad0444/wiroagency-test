@@ -496,6 +496,8 @@
                     section_id: section.id,
                     show_pickup_availability: true
                   -%}
+                {%- when 'gift_wrapping' -%}
+                  {%- render 'gift-wrapping', block: block, product: product, product_form_id: product_form_id -%}
                 {%- when 'rating' -%}
                   {%- if product.metafields.reviews.rating.value != blank -%}
                     <div class="rating-wrapper">
@@ -937,6 +939,33 @@
           "default": true,
           "label": "t:sections.main-product.blocks.buy_buttons.settings.show_gift_card_recipient.label",
           "info": "t:sections.main-product.blocks.buy_buttons.settings.show_gift_card_recipient.info"
+        }
+      ]
+    },
+    {
+      "type": "gift_wrapping",
+      "name": "t:sections.main-product.blocks.gift_wrapping.name",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "paragraph",
+          "content": "t:sections.main-product.blocks.gift_wrapping.settings.paragraph.content"
+        },
+        {
+          "type": "checkbox",
+          "id": "show_low_stock",
+          "default": true,
+          "label": "t:sections.main-product.blocks.gift_wrapping.settings.show_low_stock.label"
+        },
+        {
+          "type": "range",
+          "id": "low_stock_threshold",
+          "min": 2,
+          "max": 50,
+          "step": 1,
+          "default": 10,
+          "label": "t:sections.main-product.blocks.gift_wrapping.settings.low_stock_threshold.label",
+          "info": "t:sections.main-product.blocks.gift_wrapping.settings.low_stock_threshold.info"
         }
       ]
     },

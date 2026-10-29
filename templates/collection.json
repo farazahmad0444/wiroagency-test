@@ -13,6 +13,7 @@
       "settings": {
         "products_per_page": 16,
         "columns_desktop": 4,
+        "columns_mobile": "2",
         "color_scheme": "scheme-1",
         "image_ratio": "adapt",
         "image_shape": "default",
@@ -21,9 +22,10 @@
         "show_rating": false,
         "quick_add": "none",
         "enable_filtering": true,
-        "filter_type": "horizontal",
+        "filter_type": "drawer",
         "enable_sorting": true,
-        "columns_mobile": "2",
+        "show_quick_filters": true,
+        "quick_filters_default": "Snowboard, Accessories, Giftcard",
         "padding_top": 36,
         "padding_bottom": 36
       }
