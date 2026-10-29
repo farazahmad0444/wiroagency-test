@@ -266,7 +266,8 @@ class FacetFiltersForm extends HTMLElement {
   }
 
   static renderAdditionalElements(html) {
-    const mobileElementSelectors = ['.mobile-facets__open', '.mobile-facets__count', '.sorting'];
+    // The quick filters show the applied filters too, so they're re-rendered with them.
+    const mobileElementSelectors = ['.mobile-facets__open', '.mobile-facets__count', '.sorting', '[data-quick-filters-list]'];
 
     mobileElementSelectors.forEach((selector) => {
       if (!html.querySelector(selector)) return;

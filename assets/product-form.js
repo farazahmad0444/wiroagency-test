@@ -40,14 +40,20 @@ if (!customElements.get('product-form')) {
           formData.append('sections_url', window.location.pathname);
           this.cart.setActiveElement(document.activeElement);
         }
-        config.body = formData;
+
+        // With gift wrap selected, the product and its wrap are sent together as a JSON `items` request.
+        const giftWrapBody = this.giftWrapping?.getCartRequestBody(formData);
+        if (giftWrapBody) config.headers['Content-Type'] = 'application/json';
+        config.body = giftWrapBody || formData;
 
         const variantId = formData.get('id');
         const quantity = parseInt(formData.get('quantity')) || 1;
+
         const linesUpdateDeferred = this.createCartLinesUpdateEvent(variantId, quantity);
 
         fetch(`${routes.cart_add_url}`, config)
           .then((response) => response.json())
+          .then((response) => this.normalizeAddResponse(response, variantId))
           .then((response) => {
             if (response.status) {
               publish(PUB_SUB_EVENTS.cartError, {
@@ -182,6 +188,26 @@ if (!customElements.get('product-form')) {
         const { CartErrorEvent } = window.StandardEvents || {};
         if (!CartErrorEvent) return;
         this.dispatchEvent(new CartErrorEvent({ error: message, code }));
+      }
+
+      /**
+       * Multi-item adds (e.g. product + gift wrap) respond with `{ items, sections }`.
+       * Flattens that to the added product so the cart drawer and notification
+       * keep receiving the single-item response they expect.
+       * @param {object} response The parsed /cart/add response
+       * @param {string} variantId The product variant that was added
+       * @returns {object}
+       */
+      normalizeAddResponse(response, variantId) {
+        if (!response.items) return response;
+
+        const item = response.items.find((item) => String(item.variant_id) === String(variantId));
+        return { ...item, sections: response.sections };
+      }
+
+      get giftWrapping() {
+        // `form.id` would return the form's `name="id"` variant input, so read the attribute instead.
+        return document.querySelector(`gift-wrapping[data-form-id="${this.form.getAttribute('id')}"]`);
       }
 
       get variantIdInput() {

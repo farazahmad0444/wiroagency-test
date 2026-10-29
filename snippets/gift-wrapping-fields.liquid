@@ -1,0 +1,54 @@
+{% doc %}
+  Renders the To, From and Gift message fields, using the Gift wrapping theme settings
+  for which fields show and their character limits.
+
+  @param {string} id_prefix - Makes the field IDs unique, e.g. the block ID or cart line key.
+  @param {string} [form_id] - ID of the form the fields submit with. Omit when values are read by JavaScript.
+  @param {object} [properties] - An existing gift wrap line's properties, used to prefill the fields.
+
+  @example
+  {% render 'gift-wrapping-fields', id_prefix: block.id, form_id: product_form_id %}
+{% enddoc %}
+{%- liquid
+  assign to_property = 'products.product.gift_wrapping.to' | t
+  assign from_property = 'products.product.gift_wrapping.from' | t
+  assign message_property = 'products.product.gift_wrapping.message' | t
+
+  assign to_id = 'GiftWrapTo-' | append: id_prefix
+  assign from_id = 'GiftWrapFrom-' | append: id_prefix
+  assign message_id = 'GiftWrapMessage-' | append: id_prefix
+
+  assign to_placeholder = 'products.product.gift_wrapping.to_placeholder' | t
+  assign from_placeholder = 'products.product.gift_wrapping.from_placeholder' | t
+  assign message_placeholder = 'products.product.gift_wrapping.message_placeholder' | t
+-%}
+<div class="tw-flex tw-flex-col tw-gap-4">
+  {%- if settings.gift_wrap_show_recipient_fields -%}
+    {%- render 'gift-wrapping-field',
+      id: to_id,
+      property: to_property,
+      value: properties[to_property],
+      max_length: settings.gift_wrap_to_max_length,
+      placeholder: to_placeholder,
+      form_id: form_id
+    -%}
+    {%- render 'gift-wrapping-field',
+      id: from_id,
+      property: from_property,
+      value: properties[from_property],
+      max_length: settings.gift_wrap_from_max_length,
+      placeholder: from_placeholder,
+      form_id: form_id
+    -%}
+  {%- endif -%}
+
+  {%- render 'gift-wrapping-field',
+    id: message_id,
+    property: message_property,
+    value: properties[message_property],
+    max_length: settings.gift_wrap_message_max_length,
+    placeholder: message_placeholder,
+    form_id: form_id,
+    multiline: true
+  -%}
+</div>

@@ -1400,6 +1400,48 @@
     ]
   },
   {
+    "name": "t:settings_schema.gift_wrapping.name",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "t:settings_schema.gift_wrapping.settings.paragraph.content"
+      },
+      {
+        "type": "checkbox",
+        "id": "gift_wrap_show_recipient_fields",
+        "default": true,
+        "label": "t:settings_schema.gift_wrapping.settings.show_recipient_fields.label"
+      },
+      {
+        "type": "range",
+        "id": "gift_wrap_to_max_length",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "default": 30,
+        "label": "t:settings_schema.gift_wrapping.settings.to_max_length.label"
+      },
+      {
+        "type": "range",
+        "id": "gift_wrap_from_max_length",
+        "min": 10,
+        "max": 60,
+        "step": 1,
+        "default": 30,
+        "label": "t:settings_schema.gift_wrapping.settings.from_max_length.label"
+      },
+      {
+        "type": "range",
+        "id": "gift_wrap_message_max_length",
+        "min": 50,
+        "max": 500,
+        "step": 10,
+        "default": 200,
+        "label": "t:settings_schema.gift_wrapping.settings.message_max_length.label"
+      }
+    ]
+  },
+  {
     "name": "t:settings_schema.cart.name",
     "settings": [
       {

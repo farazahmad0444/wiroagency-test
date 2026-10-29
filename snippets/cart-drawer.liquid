@@ -11,6 +11,7 @@
 {{ 'component-card.css' | asset_url | stylesheet_tag }}
 
 <script src="{{ 'cart.js' | asset_url }}" defer="defer"></script>
+<script src="{{ 'cart-gift-wrapping.js' | asset_url }}" defer="defer"></script>
 <script src="{{ 'quantity-popover.js' | asset_url }}" defer="defer"></script>
 
 <style>
@@ -122,6 +123,8 @@
 
                   <tbody role="rowgroup">
                     {%- for item in cart.items -%}
+                      {%- comment -%} Gift wrap lines are shown as a panel on the product they wrap. {%- endcomment -%}
+                      {%- if item.properties['_gift_wrap_for'] != blank -%}{%- continue -%}{%- endif -%}
                       <tr
                         id="CartDrawer-Item-{{ item.index | plus: 1 }}"
                         class="cart-item{% if item.parent_relationship.parent != null %} cart-item__nested-line{% endif %}"
@@ -472,6 +475,10 @@
                               </span>
                             </div>
                           </quantity-popover>
+                        </td>
+
+                        <td class="tw-col-span-full !tw-pl-0 empty:tw-hidden" role="cell">
+                          {%- render 'cart-gift-wrapping', item: item, id_prefix: 'CartDrawer' -%}
                         </td>
                       </tr>
                     {%- endfor -%}

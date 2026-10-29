@@ -1,0 +1,122 @@
+{% doc %}
+  Renders the gift wrap panel under a gift wrapped cart line: shows who it's for, lets the
+  customer edit the details, and unticking removes the wrap. Renders nothing for lines
+  without a gift wrap.
+
+  The gift wrap is its own cart line, paired with this one through matching hidden
+  `_gift_wrap_id` / `_gift_wrap_for` properties. Wrap lines themselves should be skipped
+  in the cart loop, as this panel stands in for them.
+
+  @param {line_item} item - The cart line that may be gift wrapped.
+  @param {string} id_prefix - Keeps field IDs unique when the drawer and cart page render together.
+
+  @example
+  {% render 'cart-gift-wrapping', item: item, id_prefix: 'CartDrawer' %}
+{% enddoc %}
+{%- liquid
+  assign gift_wrap_id = item.properties['_gift_wrap_id']
+  assign wrap_item = nil
+
+  if gift_wrap_id != blank
+    for cart_item in cart.items
+      if cart_item.properties['_gift_wrap_for'] == gift_wrap_id
+        assign wrap_item = cart_item
+        break
+      endif
+    endfor
+  endif
+-%}
+
+{%- if wrap_item -%}
+  {%- liquid
+    assign field_prefix = id_prefix | append: '-' | append: item.index
+    assign toggle_id = 'GiftWrapToggle-' | append: field_prefix
+    assign form_id = 'GiftWrapForm-' | append: field_prefix
+
+    assign to_property = 'products.product.gift_wrapping.to' | t
+    assign from_property = 'products.product.gift_wrapping.from' | t
+    assign message_property = 'products.product.gift_wrapping.message' | t
+
+    assign summary_parts = ''
+    if wrap_item.properties[to_property] != blank
+      assign summary_parts = summary_parts | append: to_property | append: ': ' | append: wrap_item.properties[to_property] | append: '|~|'
+    endif
+    if wrap_item.properties[from_property] != blank
+      assign summary_parts = summary_parts | append: from_property | append: ': ' | append: wrap_item.properties[from_property] | append: '|~|'
+    endif
+    if wrap_item.properties[message_property] != blank
+      assign summary_parts = summary_parts | append: '“' | append: wrap_item.properties[message_property] | append: '”'
+    endif
+    assign summary_parts = summary_parts | split: '|~|'
+  -%}
+  <cart-gift-wrapping
+    class="tw-block !tw-max-w-none tw-bg-foreground/5 tw-p-4 aria-busy:tw-pointer-events-none"
+    data-gift-wrap-id="{{ gift_wrap_id | escape }}"
+    data-wrap-key="{{ wrap_item.key }}"
+    data-wrap-quantity="{{ wrap_item.quantity }}"
+    data-wrap-properties="{{ wrap_item.properties | json | escape }}"
+  >
+    <div class="tw-flex tw-items-center tw-justify-between tw-gap-4">
+      <label for="{{ toggle_id }}" class="tw-flex tw-cursor-pointer tw-items-center tw-gap-2 tw-text-base tw-text-foreground">
+        <input
+          id="{{ toggle_id }}"
+          type="checkbox"
+          class="gift-wrap-checkbox"
+          checked
+          data-gift-wrap-toggle
+        >
+        {% render 'gift-wrapping-label', variant: wrap_item.variant %}
+      </label>
+
+      <span class="tw-ml-auto tw-text-foreground/60" role="status" hidden data-gift-wrap-loader>
+        <svg class="tw-block tw-h-5 tw-w-5 tw-animate-spin motion-reduce:tw-animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-opacity="0.25" stroke-width="2.5"/>
+          <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <span class="visually-hidden">{{ 'products.product.gift_wrapping.saving' | t }}</span>
+      </span>
+
+      <button
+        type="button"
+        class="gift-wrap-link"
+        aria-expanded="false"
+        aria-controls="{{ form_id }}"
+        aria-label="{{ 'products.product.gift_wrapping.edit_label' | t: title: item.product.title | escape }}"
+        data-gift-wrap-edit
+      >
+        {{ 'products.product.gift_wrapping.edit' | t }}
+        <span class="svg-wrapper tw-h-5 tw-w-5">{{- 'icon-pencil.svg' | inline_asset_content -}}</span>
+      </button>
+    </div>
+
+    {%- comment -%} Always rendered, so JavaScript can fill it in straight away after an edit. {%- endcomment -%}
+    <p
+      class="tw-m-0 tw-mt-3 tw-break-words tw-text-base tw-text-foreground/60"
+      {% if summary_parts.size == 0 %}
+        hidden
+      {% endif %}
+      data-gift-wrap-summary
+    >
+      {{- summary_parts | join: ' / ' | escape -}}
+    </p>
+
+    <div id="{{ form_id }}" class="tw-mt-4" role="group" aria-labelledby="{{ toggle_id }}" hidden data-gift-wrap-form>
+      {%- render 'gift-wrapping-fields', id_prefix: field_prefix, properties: wrap_item.properties -%}
+
+      <div class="tw-mt-4 tw-flex tw-items-center tw-gap-6">
+        <button
+          type="button"
+          class="tw-cursor-pointer tw-rounded tw-border-0 tw-bg-button tw-px-6 tw-py-3 tw-font-body tw-text-base tw-text-button-text hover:tw-opacity-90"
+          data-gift-wrap-save
+        >
+          {{ 'products.product.gift_wrapping.save' | t }}
+        </button>
+        <button type="button" class="gift-wrap-link" data-gift-wrap-cancel>
+          {{ 'products.product.gift_wrapping.cancel' | t }}
+        </button>
+      </div>
+    </div>
+
+    <p class="tw-m-0 tw-mt-3 tw-text-sm tw-text-red-700" role="alert" hidden data-gift-wrap-error></p>
+  </cart-gift-wrapping>
+{%- endif -%}

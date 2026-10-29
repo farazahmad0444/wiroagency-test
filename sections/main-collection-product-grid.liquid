@@ -42,6 +42,11 @@
 >
   <div class="section-{{ section.id }}-padding gradient color-{{ section.settings.color_scheme }}">
     {%- paginate collection.products by section.settings.products_per_page -%}
+      {%- if section.settings.enable_filtering and section.settings.show_quick_filters -%}
+        <script src="{{ 'quick-filters.js' | asset_url }}" defer="defer"></script>
+        {% render 'quick-filters', collection: collection, default_values: section.settings.quick_filters_default %}
+      {%- endif -%}
+
       {% comment %} Sort is the first tabbable element when filter type is vertical {% endcomment %}
       {%- if section.settings.enable_sorting and section.settings.filter_type == 'vertical' -%}
         <facet-filters-form class="facets facets-vertical-sort page-width small-hide">
@@ -385,6 +390,25 @@
       "id": "enable_sorting",
       "default": true,
       "label": "t:sections.main-collection-product-grid.settings.enable_sorting.label"
+    },
+    {
+      "type": "header",
+      "content": "t:sections.main-collection-product-grid.settings.header__quick_filters.content"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_quick_filters",
+      "default": true,
+      "label": "t:sections.main-collection-product-grid.settings.show_quick_filters.label",
+      "info": "t:sections.main-collection-product-grid.settings.show_quick_filters.info",
+      "visible_if": "{{ section.settings.enable_filtering }}"
+    },
+    {
+      "type": "text",
+      "id": "quick_filters_default",
+      "label": "t:sections.main-collection-product-grid.settings.quick_filters_default.label",
+      "info": "t:sections.main-collection-product-grid.settings.quick_filters_default.info",
+      "visible_if": "{{ section.settings.enable_filtering and section.settings.show_quick_filters }}"
     },
     {
       "type": "header",

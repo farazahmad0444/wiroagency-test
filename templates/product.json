@@ -29,6 +29,10 @@
           "type": "quantity_selector",
           "settings": {}
         },
+        "gift_wrapping": {
+          "type": "gift_wrapping",
+          "settings": {}
+        },
         "buy_buttons": {
           "type": "buy_buttons",
           "settings": {
@@ -53,6 +57,7 @@
         "price",
         "variant_picker",
         "quantity_selector",
+        "gift_wrapping",
         "buy_buttons",
         "description",
         "share"

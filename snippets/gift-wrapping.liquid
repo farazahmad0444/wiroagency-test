@@ -1,0 +1,77 @@
+{% doc %}
+  Renders the "Wrap as a gift?" option and low stock message on the product page.
+  The gift wrap option only shows when the product's `custom.gift_wrapping_product`
+  metafield references an available product.
+
+  When selected, the gift wrap product is added to the cart as its own line, in the same
+  request as the product, so it can be free or priced. The recipient details are saved as
+  properties on the gift wrap line. Field limits come from the Gift wrapping theme settings.
+
+  @param {block} block - The gift_wrapping block, whose settings control the low stock message.
+  @param {product} product - The product being gift wrapped.
+  @param {string} product_form_id - ID of the product form the gift wrap submits with.
+
+  @example
+  {% render 'gift-wrapping', block: block, product: product, product_form_id: product_form_id %}
+{% enddoc %}
+{%- liquid
+  assign gift_wrap_variant = product.metafields.custom.gift_wrapping_product.value.selected_or_first_available_variant
+  assign has_gift_wrap = false
+  if gift_wrap_variant.available
+    assign has_gift_wrap = true
+  endif
+-%}
+
+{%- if has_gift_wrap or block.settings.show_low_stock -%}
+  {%- liquid
+    assign toggle_id = 'GiftWrapToggle-' | append: block.id
+    assign fields_id = 'GiftWrapFields-' | append: block.id
+    assign stock_id = 'LowStock-' | append: product_form_id
+  -%}
+
+  <script src="{{ 'gift-wrapping.js' | asset_url }}" defer="defer"></script>
+
+  <gift-wrapping
+    class="tw-my-6 tw-block"
+    data-form-id="{{ product_form_id }}"
+    {% if has_gift_wrap %}
+      data-variant-id="{{ gift_wrap_variant.id }}"
+      data-parent-title="{{ product.title | escape }}"
+      data-parent-property="{{ 'products.product.gift_wrapping.property_for' | t | escape }}"
+    {% endif %}
+    {{ block.shopify_attributes }}
+  >
+    <div class="tw-flex tw-flex-wrap tw-items-center tw-justify-between tw-gap-4">
+      {%- if has_gift_wrap -%}
+        <label for="{{ toggle_id }}" class="tw-flex tw-cursor-pointer tw-items-center tw-gap-2 tw-text-base tw-text-foreground">
+          <input
+            id="{{ toggle_id }}"
+            type="checkbox"
+            class="gift-wrap-checkbox"
+            aria-controls="{{ fields_id }}"
+            data-gift-wrap-toggle
+          >
+          {% render 'gift-wrapping-label', variant: gift_wrap_variant %}
+        </label>
+      {%- endif -%}
+
+      {%- if block.settings.show_low_stock -%}
+        {%- render 'low-stock-badge',
+          id: stock_id,
+          variant: product.selected_or_first_available_variant,
+          threshold: block.settings.low_stock_threshold
+        -%}
+      {%- endif -%}
+    </div>
+
+    {%- if has_gift_wrap -%}
+      {%- comment -%}
+        Disabled until selected, so the browser leaves these fields out of the product form submission.
+      {%- endcomment -%}
+      <fieldset id="{{ fields_id }}" class="tw-m-0 tw-mt-6 tw-min-w-0 tw-border-0 tw-p-0" disabled hidden data-gift-wrap-fields>
+        <legend class="visually-hidden">{{ 'products.product.gift_wrapping.fields_legend' | t }}</legend>
+        {%- render 'gift-wrapping-fields', id_prefix: block.id, form_id: product_form_id -%}
+      </fieldset>
+    {%- endif -%}
+  </gift-wrapping>
+{%- endif -%}
